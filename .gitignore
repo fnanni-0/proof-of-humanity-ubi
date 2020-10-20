@@ -1,0 +1,10 @@
+# Dependencies
+/node_modules/
+
+# Buidler
+/artifacts/
+/cache/
+
+# Coverage
+/coverage/
+/coverage.json

@@ -1,0 +1,15 @@
+{
+  "ignores": [
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@nomiclabs/buidler-ethers",
+    "@nomiclabs/buidler-solhint",
+    "@nomiclabs/buidler-waffle",
+    "buidler-gas-reporter",
+    "ethereum-waffle",
+    "ethers",
+    "prettier-plugin-solidity",
+    "solhint",
+    "solidity-coverage"
+  ]
+}
