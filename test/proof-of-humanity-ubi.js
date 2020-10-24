@@ -4,29 +4,31 @@ describe("ProofOfHumanityUBI", () => {
   let accounts;
 
   let addresses;
+  let setTransferSuccess;
   let setSubmissionIsRegistered;
 
   let proofOfHumanityUBI;
   before(async () => {
     accounts = await ethers.getSigners();
 
-    const [_addresses, mockProofOfHumanity, mockERC20] = await Promise.all([
+    const [_addresses, mockERC20, mockProofOfHumanity] = await Promise.all([
       Promise.all(accounts.map((account) => account.getAddress())),
-      waffle.deployMockContract(
-        accounts[0],
-        require("../artifacts/IProofOfHumanity.json").abi
-      ),
       waffle.deployMockContract(
         accounts[0],
         require("../artifacts/IERC20.json").abi
       ),
+      waffle.deployMockContract(
+        accounts[0],
+        require("../artifacts/IProofOfHumanity.json").abi
+      ),
     ]);
     addresses = _addresses;
+    mockERC20.mock.transfer.returns(true);
+    setTransferSuccess = (success) => mockERC20.mock.transfer.returns(success);
     setSubmissionIsRegistered = (submissionID, isRegistered) =>
       mockProofOfHumanity.mock.getSubmissionInfo
         .withArgs(submissionID)
         .returns(0, 0, 0, 0, isRegistered, false, 0);
-    mockERC20.mock.transfer.returns(true);
 
     proofOfHumanityUBI = await (
       await ethers.getContractFactory("ProofOfHumanityUBI")
@@ -90,9 +92,16 @@ describe("ProofOfHumanityUBI", () => {
       proofOfHumanityUBI.withdrawAccrued(addresses[2])
     ).to.be.revertedWith("The submission is not accruing UBI.");
 
+    // Make sure it reverts if the token transfer fails.
+    await setSubmissionIsRegistered(addresses[1], true);
+    await setTransferSuccess(false);
+    await expect(
+      proofOfHumanityUBI.withdrawAccrued(addresses[1])
+    ).to.be.revertedWith("Token transfer failed.");
+    await setTransferSuccess(true);
+
     // Withdraw UBI and verify that `accruingSinceBlock` was reset.
     // Also verify that the accrued UBI was sent correctly.
-    await setSubmissionIsRegistered(addresses[1], true);
     const accruingSinceBlock = await proofOfHumanityUBI.accruingSinceBlock(
       addresses[1]
     );
@@ -124,9 +133,16 @@ describe("ProofOfHumanityUBI", () => {
       proofOfHumanityUBI.reportRemoval(addresses[2])
     ).to.be.revertedWith("The submission is not accruing UBI.");
 
+    // Make sure it reverts if the token transfer fails.
+    await setSubmissionIsRegistered(addresses[1], false);
+    await setTransferSuccess(false);
+    await expect(
+      proofOfHumanityUBI.reportRemoval(addresses[1])
+    ).to.be.revertedWith("Token transfer failed.");
+    await setTransferSuccess(true);
+
     // Report submission and verify that `accruingSinceBlock` was reset.
     // Also verify that the accrued UBI was sent correctly.
-    await setSubmissionIsRegistered(addresses[1], false);
     const accruingSinceBlock = await proofOfHumanityUBI.accruingSinceBlock(
       addresses[1]
     );

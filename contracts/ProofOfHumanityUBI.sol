@@ -161,7 +161,10 @@ contract ProofOfHumanityUBI {
         uint256 accrued = getAccruedValue(_submissionID);
         accruingSinceBlock[_submissionID] = block.number;
 
-        token.transfer(_submissionID, accrued);
+        require(
+            token.transfer(_submissionID, accrued),
+            "Token transfer failed."
+        );
         emit Withdrawal(_submissionID, _submissionID, accrued);
     }
 
@@ -179,7 +182,7 @@ contract ProofOfHumanityUBI {
         uint256 accrued = getAccruedValue(_submissionID);
         accruingSinceBlock[_submissionID] = 0;
 
-        token.transfer(msg.sender, accrued);
+        require(token.transfer(msg.sender, accrued), "Token transfer failed.");
         emit Withdrawal(_submissionID, msg.sender, accrued);
     }
 
