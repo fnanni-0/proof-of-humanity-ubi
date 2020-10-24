@@ -64,9 +64,9 @@ contract ProofOfHumanityUBI {
     address public governor = msg.sender;
 
     /// @dev The token the UBI is paid with.
-    IERC20 public token;
+    IERC20 public immutable token;
     /// @dev The Proof Of Humanity registry to reference.
-    IProofOfHumanity public proofOfHumanity;
+    IProofOfHumanity public immutable proofOfHumanity;
 
     /* Governable Storage */
 
